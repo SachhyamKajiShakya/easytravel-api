@@ -96,7 +96,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'EasyTravel_DB',
         'USER': 'postgres',
-        'PASSWORD': 'admin',
+        'PASSWORD': 'easytravel',
         'HOST': 'localhost',
         'PORT': '5432',
     }

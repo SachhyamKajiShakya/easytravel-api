@@ -15,9 +15,8 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from .serializers import UserRegistrationSerializer, RegisterVehicleSerializer, AssignDriverSerializer
 from .models import Account, RegisterVehicle, AssignDriver
 
+
 # method based api function to register user
-
-
 @api_view(['POST'])
 @permission_classes([])  # setting permission class to null
 def user_registration(request):
@@ -32,9 +31,8 @@ def user_registration(request):
             data = serializer.errors
         return Response(data)
 
+
 # class based view to login user
-
-
 class CustomAuthToken(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data,
@@ -44,9 +42,8 @@ class CustomAuthToken(ObtainAuthToken):
         token, created = Token.objects.get_or_create(user=user)
         return Response({'token': token.key})
 
+
 # function based api method to register vehicle
-
-
 @api_view(['POST', 'GET'])
 # setting permission class to only authenticated user
 @permission_classes([IsAuthenticated])
@@ -59,9 +56,8 @@ def register_vehicle(request):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 # get method to fetch vehicles with category short travel
-
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def fetchShortVehicles(request):
@@ -71,26 +67,14 @@ def fetchShortVehicles(request):
         serializer = RegisterVehicleSerializer(queryset, many=True)
         return Response(serializer.data)
 
+
 # fetch method to fetch vehicles with category long travel
-
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def fetchLongVehicles(request):
     if request.method == 'GET':
         queryset = RegisterVehicle.objects.raw(
             "SELECT * FROM api_registervehicle WHERE category='Long Travel'")
-        serializer = RegisterVehicleSerializer(queryset, many=True)
-        return Response(serializer.data)
-
-
-# fetch vehicles with category Both
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def fetchBothVehicles(request):
-    if request.method == 'GET':
-        queryset = RegisterVehicle.objects.raw(
-            "SELECT * FROM api_registervehicle WHERE category='Both'")
         serializer = RegisterVehicleSerializer(queryset, many=True)
         return Response(serializer.data)
 
@@ -105,6 +89,15 @@ def assign_driver(request):
     if request.method == 'POST':
         serializer = AssignDriverSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(vehicleId=registeredVehicle)
+            serializer.save(vehicleid=registeredVehicle)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def fetchDriverDetails(request, id):
+    if request.method == 'GET':
+        queryset = AssignDriver.objects.filter(vehicleid=id)
+        serializer = AssignDriverSerializer(queryset, many=True)
+        return Response(serializer.data)

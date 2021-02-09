@@ -95,7 +95,7 @@ class RegisterVehicle(models.Model):
     model = models.CharField(max_length=50, blank=False)
     licenseNumber = models.CharField(max_length=50, blank=False, unique=True)
     category = models.CharField(max_length=20, blank=False)
-    service = models.CharField(max_length=20, blank=False)
+    service = models.CharField(max_length=50, blank=False)
     description = models.CharField(max_length=500, blank=False)
     price = models.IntegerField(blank=False)
     vehicleImage = models.ImageField(default='Blank', blank=False)
@@ -112,7 +112,7 @@ class AssignDriver(models.Model):
     driverAddress = models.CharField(max_length=100, blank=False)
     driverContact = models.CharField(max_length=20, blank=False, unique=True)
     licenseImage = models.ImageField(default='Blank', blank=False)
-    vehicleId = models.OneToOneField(
+    vehicleid = models.OneToOneField(
         RegisterVehicle, on_delete=models.CASCADE)
 
     def __str__(self):

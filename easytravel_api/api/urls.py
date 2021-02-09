@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import user_registration, register_vehicle, CustomAuthToken, assign_driver
-from .views import fetchShortVehicles, fetchLongVehicles, fetchBothVehicles
+from .views import fetchShortVehicles, fetchLongVehicles, fetchDriverDetails
 from rest_framework.authtoken.views import obtain_auth_token
 
 app_name = 'api'
@@ -12,5 +12,6 @@ urlpatterns = [
     path('driver/', assign_driver, name='driver'),
     path('vehicle/short', fetchShortVehicles, name='shortVehicle'),
     path('vehicle/long', fetchLongVehicles, name='longVehicle'),
-    path('vehicle/both', fetchBothVehicles, name='bothVehicle'),
+    path('driver/<int:id>', fetchDriverDetails,
+         name='driverdetails'),
 ]

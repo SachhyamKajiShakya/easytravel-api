@@ -26,7 +26,7 @@ SECRET_KEY = 'gs5*-#8!yon-d+-e1356!tjums=i@ou=i0&_c6h3rk9-7!^jn#'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.100.67', '127.0.0.1']
+ALLOWED_HOSTS = ['192.168.100.67', '127.0.0.1', '192.168.1.194']
 
 
 # Application definition
@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     # rest framework and token authentication
     'rest_framework',
     'rest_framework.authtoken',
+    "fcm_django"
 ]
 # setting authentication and permission classes of rest framework
 REST_FRAMEWORK = {
@@ -56,6 +57,11 @@ REST_FRAMEWORK = {
 # setting custom user model as default user model
 AUTH_USER_MODEL = 'api.Account'
 
+FCM_DJANGO_SETTINGS = {
+    "FCM_SERVER_KEY": "AAAAKKogqpw:APA91bFr5bcuuMRpGGNiti-oQi8stniJvZ4k8JDoMJUQ5I1XsjzOJq7Fesu5ZkG6PitkMTT_YUZqyq-O1DtCYHaJMNhnohtzcVcMs7LzdQ2-z8cNVPIFryUmOmVLoBXS1kRk_JteIzWE",
+    "ONE_DEVICE_PER_USER": True,
+    "DELETE_INACTIVE_DEVICES": True,
+}
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',

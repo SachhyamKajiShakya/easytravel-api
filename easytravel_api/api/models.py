@@ -4,10 +4,10 @@ from django.conf import settings
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
+from datetime import datetime
+
 
 # manager class
-
-
 class MyAccountManager(BaseUserManager):
 
     # function to create user
@@ -46,14 +46,13 @@ class MyAccountManager(BaseUserManager):
         user.save(using=self.db)
         return user
 
+
 # custom user class
-
-
 class Account(AbstractBaseUser):
     email = models.CharField(verbose_name='email', max_length=100, unique=True)
     username = models.CharField(max_length=50, unique=True)
     name = models.CharField(max_length=50)
-    phone = models.CharField(max_length=15)
+    phone = models.CharField(max_length=20)
     date_joined = models.DateTimeField(
         verbose_name='date joined', auto_now_add=True)
     last_login = models.DateTimeField(
@@ -87,9 +86,8 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
     if created:
         Token.objects.create(user=instance)
 
+
 # model class to store registered vehicle
-
-
 class RegisterVehicle(models.Model):
     brand = models.CharField(max_length=50, blank=False)
     model = models.CharField(max_length=50, blank=False)
@@ -107,6 +105,7 @@ class RegisterVehicle(models.Model):
         return self.model
 
 
+# model class to store detials of assigned driver
 class AssignDriver(models.Model):
     driverName = models.CharField(max_length=100, blank=False)
     driverAddress = models.CharField(max_length=100, blank=False)
@@ -117,3 +116,27 @@ class AssignDriver(models.Model):
 
     def __str__(self):
         return self.driverName
+
+
+# model class to store booking details
+class Booking(models.Model):
+    date_of_booking = models.DateTimeField(default=datetime.now, null=False)
+    pick_up_date = models.CharField(max_length=12, null=False)
+    pick_up_time = models.CharField(max_length=8, null=False)
+    pick_up_province = models.IntegerField(null=True)
+    pick_up_district = models.CharField(max_length=30, null=False, default='')
+    pick_up_city = models.CharField(max_length=30, null=False, default='')
+    pick_up_street = models.CharField(max_length=50, null=False, default='')
+    destination_province = models.IntegerField(null=True)
+    destination_district = models.CharField(
+        max_length=30, null=False, default='')
+    destination_city = models.CharField(max_length=30, null=False, default='')
+    destination_street = models.CharField(
+        max_length=50, null=False, default='')
+    number_of_days = models.IntegerField(null=True)
+    driver = models.ForeignKey(AssignDriver, on_delete=models.CASCADE)
+    vehicle = models.ForeignKey(RegisterVehicle, on_delete=models.CASCADE)
+    consumer = models.ForeignKey(Account, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.pick_up_city

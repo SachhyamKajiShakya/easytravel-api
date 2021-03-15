@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Account, RegisterVehicle, AssignDriver
+from .models import Account, RegisterVehicle, AssignDriver, Booking
 
 # creating serializer class for user registration
 
@@ -10,19 +10,19 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Account
-        fields = ['email', 'username', 'name',
-                  'phone', 'password', 'password2']
+        fields = ['email', 'username', 'name', 'phone',
+                  'password', 'password2']
         extra_kwargs = {
             'password': {'write_only': True}
         }
 
     # overwriting save function to create user
-    def save(self):
+    def save(self, *args, **kwargs):
         account = Account(
             email=self.validated_data['email'],
             username=self.validated_data['username'],
             name=self.validated_data['name'],
-            phone=self.validated_data['phone'],
+            phone=self.validated_data['phone']
         )
         password = self.validated_data['password']
         password2 = self.validated_data['password2']
@@ -50,3 +50,26 @@ class AssignDriverSerializer(serializers.ModelSerializer):
         model = AssignDriver
         fields = ['id', 'driverName', 'driverAddress',
                   'driverContact', 'licenseImage']
+
+
+class PhoneSerializer(serializers.Serializer):
+    phone = serializers.CharField()
+
+
+class OtpSerializer(serializers.Serializer):
+    phoneNumber = serializers.CharField()
+    otp = serializers.CharField()
+
+
+class ShortBookingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Booking
+        fields = ['id', 'pick_up_date', 'pick_up_time', 'pick_up_district', 'pick_up_city',
+                  'pick_up_street', 'destination_district', 'destination_city', 'destination_street']
+
+
+class LongBookingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Booking
+        fields = ['id', 'pick_up_province', 'number_of_days', 'pick_up_district', 'pick_up_city', 'pick_up_street', 'pick_up_date', 'pick_up_time', 'destination_province',
+                  'destination_district', 'destination_city', 'destination_street']

@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate
 from django.conf import settings
 
@@ -13,7 +13,41 @@ from rest_framework.authtoken.views import ObtainAuthToken
 
 # imports to be made locally
 from .serializers import UserRegistrationSerializer, RegisterVehicleSerializer, AssignDriverSerializer
-from .models import Account, RegisterVehicle, AssignDriver
+from .serializers import PhoneSerializer, OtpSerializer, ShortBookingSerializer, LongBookingSerializer
+from .models import Account, RegisterVehicle, AssignDriver, Booking
+from .sms import verifications, verification_checks
+from pyfcm import FCMNotification
+
+
+# post method to enter the phone number and send otp
+# @api_view(['POST'])
+# @permission_classes([])
+# def phone_verification(request):
+#     if request.method == 'POST':
+#         serializer = PhoneSerializer(data=request.data)
+#         if serializer.is_valid():
+#             request.session['phone'] = serializer.data['phone']
+#             verification = verifications(
+#                 request.session['phone'], 'sms')
+#             print(request.session['phone'])
+#         return Response({'phoneNumber': request.session['phone']})
+
+
+# post method to check the entered otp code
+# @api_view(['POST'])
+# @permission_classes([])
+# def otp_verification(request):
+#     if request.method == 'POST':
+#         serializer = OtpSerializer(data=request.data)
+#         if serializer.is_valid():
+#             print(serializer.data['otp'])
+#             print(serializer.data['phoneNumber'])
+#             verification = verification_checks(
+#                 serializer.data['phoneNumber'], serializer.data['otp'])
+#             if verification.status == 'approved':
+#                 print(request.session['phoneNumber'])
+#                 return Response({'status': verification.status})
+#         return Response(serializer.data)
 
 
 # method based api function to register user
@@ -44,9 +78,9 @@ class CustomAuthToken(ObtainAuthToken):
 
 
 # function based api method to register vehicle
-@api_view(['POST', 'GET'])
+@ api_view(['POST', 'GET'])
 # setting permission class to only authenticated user
-@permission_classes([IsAuthenticated])
+@ permission_classes([IsAuthenticated])
 def register_vehicle(request):
     vendor = request.user
     if request.method == 'POST':
@@ -58,8 +92,8 @@ def register_vehicle(request):
 
 
 # get method to fetch vehicles with category short travel
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@ api_view(['GET'])
+@ permission_classes([IsAuthenticated])
 def fetchShortVehicles(request):
     if request.method == 'GET':
         queryset = RegisterVehicle.objects.raw(
@@ -101,3 +135,46 @@ def fetchDriverDetails(request, id):
         queryset = AssignDriver.objects.filter(vehicleid=id)
         serializer = AssignDriverSerializer(queryset, many=True)
         return Response(serializer.data)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def make_shortbookings(request, vehicleid, driverid):
+    assigned_driver = AssignDriver.objects.get(id=driverid)
+    booked_vehicle = RegisterVehicle.objects.get(id=vehicleid)
+    consumer = request.user
+    if request.method == 'POST':
+        serializer = ShortBookingSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(vehicle=booked_vehicle, driver=assigned_driver,
+                            consumer=consumer)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def make_longbookings(request, vehicleid, driverid):
+    assigned_driver = AssignDriver.objects.get(id=driverid)
+    booked_vehicle = RegisterVehicle.objects.get(id=vehicleid)
+    consumer = request.user
+    if request.method == 'POST':
+        serializer = LongBookingSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(vehicle=booked_vehicle, driver=assigned_driver,
+                            consumer=consumer)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST', 'GET'])
+def send_notification(request):
+    psuh_service = FCMNotification(
+        api_key="AAAAKKogqpw:APA91bFr5bcuuMRpGGNiti-oQi8stniJvZ4k8JDoMJUQ5I1XsjzOJq7Fesu5ZkG6PitkMTT_YUZqyq-O1DtCYHaJMNhnohtzcVcMs7LzdQ2-z8cNVPIFryUmOmVLoBXS1kRk_JteIzWE")
+    message_title = "title from django"
+    message_body = "body from django"
+    registration_id = [
+        "c9pbFgRfRDKSoEsHC-w6Qh:APA91bEnygeiC6R9yDKdlky-tZGEkcVH3aGolRJTXxREK685IZzwYg-zIAQtK2quihTkRE-b5mikniMYAA_umNUNm9nuV6-DFmvO65HqMQGzspDJSaUvxnSMpIz7eBZ9d3mOkK2pfKSK"]
+    psuh_service.notify_multiple_devices(
+        registration_ids=registration_id, message_body=message_body, message_title=message_title)
+    return Response(status=status.HTTP_410_GONE)

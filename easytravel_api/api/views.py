@@ -13,7 +13,7 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.parsers import JSONParser
 
 # imports to be made locally
-from .serializers import UserRegistrationSerializer, RegisterVehicleSerializer, AssignDriverSerializer
+from .serializers import UserRegistrationSerializer, RegisterVehicleSerializer, AssignDriverSerializer, UserUpdateSerializer
 from .serializers import PhoneSerializer, OtpSerializer, ShortBookingSerializer, LongBookingSerializer, DeviceTokenSerializer
 from .models import Account, RegisterVehicle, AssignDriver, Booking, DeviceToken
 from .sms import verifications, verification_checks
@@ -65,6 +65,19 @@ def user_registration(request):
         else:
             data = serializer.errors
         return Response(data)
+
+
+# api put method to edit user data
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def updateUser(request, user_id):
+    user = Account.objects.get(id=user_id)
+    if request.method == 'PUT':
+        serializer = UserUpdateSerializer(user, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.error_messages, status=status.HTTP_400_BAD_REQUEST)
 
 
 # class based view to login user

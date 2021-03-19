@@ -3,7 +3,7 @@ from rest_framework.authtoken.views import obtain_auth_token
 from fcm_django.api.rest_framework import FCMDeviceAuthorizedViewSet
 from .views import user_registration, register_vehicle, CustomAuthToken, assign_driver
 from .views import fetchShortVehicles, fetchLongVehicles, manageDriver, make_shortbookings, make_longbookings, send_notification
-from .views import store_device_token, manage_vehicles, LogoutView
+from .views import store_device_token, manage_vehicles, LogoutView, updateUser
 # phone_verification, otp_verification
 
 
@@ -11,6 +11,7 @@ app_name = 'api'
 
 urlpatterns = [
     path('register/', user_registration, name='register'),
+    path('updateuser/<int:user_id>', updateUser, name='updateuser'),
     path('login/', CustomAuthToken.as_view(), name="login"),
     path('vehicle/', register_vehicle, name='vehicle'),
     path('driver/', assign_driver, name='driver'),

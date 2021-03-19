@@ -35,6 +35,13 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         return account
 
 
+# creating model serializer to update user data
+class UserUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Account
+        fields = ['name', 'username', 'phone']
+
+
 # serializer class for vehicle registration
 class RegisterVehicleSerializer(serializers.ModelSerializer):
     class Meta:
@@ -43,6 +50,7 @@ class RegisterVehicleSerializer(serializers.ModelSerializer):
                   'service', 'description', 'price', 'vehicleImage', 'bluebookImage']
 
 
+# model serialzier for posting driver
 class AssignDriverSerializer(serializers.ModelSerializer):
     class Meta:
         model = AssignDriver
@@ -50,15 +58,18 @@ class AssignDriverSerializer(serializers.ModelSerializer):
                   'driverContact', 'licenseImage']
 
 
+# model serializer for storing user phone number
 class PhoneSerializer(serializers.Serializer):
     phone = serializers.CharField()
 
 
+# model serializer for storing the OTP verification code
 class OtpSerializer(serializers.Serializer):
     phoneNumber = serializers.CharField()
     otp = serializers.CharField()
 
 
+# model serialzier for posting short booking vehicles
 class ShortBookingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Booking
@@ -66,6 +77,7 @@ class ShortBookingSerializer(serializers.ModelSerializer):
                   'pick_up_street', 'destination_district', 'destination_city', 'destination_street']
 
 
+# model serializer for posting long booking vehicles
 class LongBookingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Booking
@@ -73,6 +85,7 @@ class LongBookingSerializer(serializers.ModelSerializer):
                   'destination_district', 'destination_city', 'destination_street']
 
 
+# model serializer for storing device registration token
 class DeviceTokenSerializer(serializers.ModelSerializer):
     class Meta:
         model = DeviceToken

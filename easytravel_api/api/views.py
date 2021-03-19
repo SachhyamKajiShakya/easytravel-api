@@ -10,6 +10,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.parsers import JSONParser
 
 # imports to be made locally
 from .serializers import UserRegistrationSerializer, RegisterVehicleSerializer, AssignDriverSerializer
@@ -78,7 +79,7 @@ class CustomAuthToken(ObtainAuthToken):
 
 
 # function based api method to register vehicle
-@ api_view(['POST', 'GET'])
+@ api_view(['POST'])
 # setting permission class to only authenticated user
 @ permission_classes([IsAuthenticated])
 def register_vehicle(request):
@@ -91,13 +92,34 @@ def register_vehicle(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+# api method to read, update and delete vehicles
+@api_view(['PUT', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def manage_vehicles(request, vehicle_id):
+    vehicle = RegisterVehicle.objects.get(id=vehicle_id)
+    if request.method == "PUT":
+        serializer = RegisterVehicleSerializer(vehicle, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    if request.method == "DELETE":
+        data = {}
+        operation = RegisterVehicle.objects.get(id=vehicle_id).delete()
+        if operation:
+            data["success"] = "delete success"
+        else:
+            data["failure"] = "delete failure"
+        return Response(data=data)
+
+
 # get method to fetch vehicles with category short travel
 @ api_view(['GET'])
 @ permission_classes([IsAuthenticated])
 def fetchShortVehicles(request):
     if request.method == 'GET':
-        queryset = RegisterVehicle.objects.raw(
-            "SELECT * FROM api_registervehicle WHERE category='Short Travel'")
+        queryset = RegisterVehicle.objects.get(category='Short Travel')
         serializer = RegisterVehicleSerializer(queryset, many=True)
         return Response(serializer.data)
 
@@ -128,15 +150,34 @@ def assign_driver(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['GET'])
+# api method to read, update and delete driver
+@api_view(['GET', 'PUT', 'DELETE'])
 @permission_classes([IsAuthenticated])
-def fetchDriverDetails(request, id):
+def manageDriver(request, id):
+    driver = AssignDriver.objects.get(id=id)  # get driver of specific id
     if request.method == 'GET':
         queryset = AssignDriver.objects.filter(vehicleid=id)
         serializer = AssignDriverSerializer(queryset, many=True)
         return Response(serializer.data)
 
+    if request.method == 'PUT':
+        serializer = AssignDriverSerializer(driver, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    if request.method == 'DELETE':
+        operation = driver.delete()
+        data = {}
+        if operation:
+            data["success"] = "successful delete"
+        else:
+            data["failure"] = "delete unsuccessful"
+        return Response(data=data)
+
+
+# api method to enter vehicle for short bookings
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def make_shortbookings(request, vehicleid, driverid):
@@ -152,6 +193,7 @@ def make_shortbookings(request, vehicleid, driverid):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+# api method to enter vehicle for long booking
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def make_longbookings(request, vehicleid, driverid):
@@ -180,7 +222,7 @@ def store_device_token(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# POST method to send notification to the user
+# POST method to send notification to the vendors
 @api_view(['POST'])
 @permission_classes([])
 def send_notification(request):
@@ -197,6 +239,7 @@ def send_notification(request):
     return Response(status=status.HTTP_410_GONE)
 
 
+# POST method to send notificaitons to consumers
 @api_view(['POST'])
 @permission_classes([])
 def send_consumernotification(request):

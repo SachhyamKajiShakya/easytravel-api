@@ -13,8 +13,8 @@ from rest_framework.authtoken.views import ObtainAuthToken
 
 # imports to be made locally
 from .serializers import UserRegistrationSerializer, RegisterVehicleSerializer, AssignDriverSerializer
-from .serializers import PhoneSerializer, OtpSerializer, ShortBookingSerializer, LongBookingSerializer
-from .models import Account, RegisterVehicle, AssignDriver, Booking
+from .serializers import PhoneSerializer, OtpSerializer, ShortBookingSerializer, LongBookingSerializer, DeviceTokenSerializer
+from .models import Account, RegisterVehicle, AssignDriver, Booking, DeviceToken
 from .sms import verifications, verification_checks
 from pyfcm import FCMNotification
 
@@ -167,14 +167,44 @@ def make_longbookings(request, vehicleid, driverid):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['POST', 'GET'])
+# post method to store device token for fcm
+@api_view(['POST'])
+@permission_classes([])
+def store_device_token(request):
+    consumer = request.user
+    if request.method == 'POST':
+        serializer = DeviceTokenSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(consumer_id=consumer)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# POST method to send notification to the user
+@api_view(['POST'])
+@permission_classes([])
 def send_notification(request):
-    psuh_service = FCMNotification(
+    push_service = FCMNotification(
         api_key="AAAAKKogqpw:APA91bFr5bcuuMRpGGNiti-oQi8stniJvZ4k8JDoMJUQ5I1XsjzOJq7Fesu5ZkG6PitkMTT_YUZqyq-O1DtCYHaJMNhnohtzcVcMs7LzdQ2-z8cNVPIFryUmOmVLoBXS1kRk_JteIzWE")
-    message_title = "title from django"
-    message_body = "body from django"
-    registration_id = [
-        "c9pbFgRfRDKSoEsHC-w6Qh:APA91bEnygeiC6R9yDKdlky-tZGEkcVH3aGolRJTXxREK685IZzwYg-zIAQtK2quihTkRE-b5mikniMYAA_umNUNm9nuV6-DFmvO65HqMQGzspDJSaUvxnSMpIz7eBZ9d3mOkK2pfKSK"]
-    psuh_service.notify_multiple_devices(
-        registration_ids=registration_id, message_body=message_body, message_title=message_title)
+    message_title = "message for vendor"
+    message_body = "body for vendor"
+    # data_message = {
+    #     "driver_id":"",
+    # }
+    registration_id = "c9pbFgRfRDKSoEsHC-w6Qh:APA91bEnygeiC6R9yDKdlky-tZGEkcVH3aGolRJTXxREK685IZzwYg-zIAQtK2quihTkRE-b5mikniMYAA_umNUNm9nuV6-DFmvO65HqMQGzspDJSaUvxnSMpIz7eBZ9d3mOkK2pfKSK"
+    push_service.notify_single_device(
+        registration_id=registration_id, message_body=message_body, message_title=message_title)
+    return Response(status=status.HTTP_410_GONE)
+
+
+@api_view(['POST'])
+@permission_classes([])
+def send_consumernotification(request):
+    push_service = FCMNotification(
+        api_key="AAAAKKogqpw:APA91bFr5bcuuMRpGGNiti-oQi8stniJvZ4k8JDoMJUQ5I1XsjzOJq7Fesu5ZkG6PitkMTT_YUZqyq-O1DtCYHaJMNhnohtzcVcMs7LzdQ2-z8cNVPIFryUmOmVLoBXS1kRk_JteIzWE")
+    message_title = "message for consumer"
+    message_body = "body for consumer"
+    registration_id = "c9pbFgRfRDKSoEsHC-w6Qh:APA91bEnygeiC6R9yDKdlky-tZGEkcVH3aGolRJTXxREK685IZzwYg-zIAQtK2quihTkRE-b5mikniMYAA_umNUNm9nuV6-DFmvO65HqMQGzspDJSaUvxnSMpIz7eBZ9d3mOkK2pfKSK"
+    push_service.notify_single_device(
+        registration_id=registration_id, message_body=message_body, message_title=message_title)
     return Response(status=status.HTTP_410_GONE)

@@ -134,9 +134,20 @@ class Booking(models.Model):
     destination_street = models.CharField(
         max_length=50, null=False, default='')
     number_of_days = models.IntegerField(null=True)
+    status = models.CharField(default='pending', null=False, max_length=50)
     driver = models.ForeignKey(AssignDriver, on_delete=models.CASCADE)
-    vehicle = models.ForeignKey(RegisterVehicle, on_delete=models.CASCADE)
-    consumer = models.ForeignKey(Account, on_delete=models.CASCADE)
+    vehicle = models.ForeignKey(
+        RegisterVehicle, on_delete=models.SET_NULL, null=True)
+    consumer = models.ForeignKey(Account, on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
         return self.pick_up_city
+
+
+class DeviceToken(models.Model):
+    device_token = models.TextField(null=False)
+    consumer_id = models.ForeignKey(
+        Account, on_delete=models.SET_NULL, null=True)
+
+    def __str__(self):
+        return self.consumer_id

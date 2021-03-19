@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Account, RegisterVehicle, AssignDriver, Booking
+from .models import Account, RegisterVehicle, AssignDriver, Booking, DeviceToken
 
 # creating serializer class for user registration
 
@@ -35,9 +35,8 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         account.save()
         return account
 
+
 # serializer class for vehicle registration
-
-
 class RegisterVehicleSerializer(serializers.ModelSerializer):
     class Meta:
         model = RegisterVehicle
@@ -73,3 +72,9 @@ class LongBookingSerializer(serializers.ModelSerializer):
         model = Booking
         fields = ['id', 'pick_up_province', 'number_of_days', 'pick_up_district', 'pick_up_city', 'pick_up_street', 'pick_up_date', 'pick_up_time', 'destination_province',
                   'destination_district', 'destination_city', 'destination_street']
+
+
+class DeviceTokenSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DeviceToken
+        fields = ['device_token']

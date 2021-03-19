@@ -1,9 +1,11 @@
 from django.urls import path
-from .views import user_registration, register_vehicle, CustomAuthToken, assign_driver
-from .views import fetchShortVehicles, fetchLongVehicles, fetchDriverDetails, make_shortbookings, make_longbookings, send_notification
-# phone_verification, otp_verification
 from rest_framework.authtoken.views import obtain_auth_token
 from fcm_django.api.rest_framework import FCMDeviceAuthorizedViewSet
+from .views import user_registration, register_vehicle, CustomAuthToken, assign_driver
+from .views import fetchShortVehicles, fetchLongVehicles, fetchDriverDetails, make_shortbookings, make_longbookings, send_notification
+from .views import store_device_token
+# phone_verification, otp_verification
+
 
 app_name = 'api'
 
@@ -23,4 +25,5 @@ urlpatterns = [
     path('longbooking/<int:vehicleid>/<int:driverid>/',
          make_longbookings, name='longbooking'),
     path('fcm/', send_notification, name="fcm"),
+    path('storedevicetoken/', store_device_token, name='storedevicetoken'),
 ]

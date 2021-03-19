@@ -1,9 +1,8 @@
 from rest_framework import serializers
 from .models import Account, RegisterVehicle, AssignDriver, Booking, DeviceToken
 
+
 # creating serializer class for user registration
-
-
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(
         style={'input_type': 'password'}, write_only=True)

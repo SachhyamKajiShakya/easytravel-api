@@ -27,7 +27,7 @@ SECRET_KEY = 'gs5*-#8!yon-d+-e1356!tjums=i@ou=i0&_c6h3rk9-7!^jn#'
 DEBUG = False
 
 ALLOWED_HOSTS = ['192.168.100.67', '127.0.0.1',
-                 '192.168.1.194', 'fyp-easytravel.herokuapp.com']
+                 'fyp-easytravel.herokuapp.com']
 
 
 # Application definition

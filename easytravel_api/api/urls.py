@@ -3,7 +3,7 @@ from rest_framework.authtoken.views import obtain_auth_token
 from fcm_django.api.rest_framework import FCMDeviceAuthorizedViewSet
 from .views import user_registration, register_vehicle, CustomAuthToken, assign_driver
 from .views import fetchShortVehicles, fetchLongVehicles, manageDriver, make_shortbookings, make_longbookings, send_notification
-from .views import store_device_token, manage_vehicles, LogoutView, updateUser
+from .views import store_device_token, manage_vehicles, LogoutView, updateUser, getBooking
 # phone_verification, otp_verification
 
 
@@ -30,4 +30,5 @@ urlpatterns = [
     path('managevehicles/<int:vehicle_id>',
          manage_vehicles, name='managevehicles'),
     path('logout/', LogoutView.as_view(), name='logout'),
+    path('getbooking/<str:booking_id>', getBooking, name='getBooking'),
 ]

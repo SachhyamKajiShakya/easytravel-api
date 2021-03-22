@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, logout as django_logout
+from django.contrib.auth.hashers import make_password
 from django.conf import settings
+from django.db.models import Q
 
 # imports to be made from rest framework
 from rest_framework import status
@@ -14,7 +16,7 @@ from rest_framework.parsers import JSONParser
 
 # imports to be made locally
 from .serializers import UserRegistrationSerializer, RegisterVehicleSerializer, AssignDriverSerializer, UserUpdateSerializer
-from .serializers import PhoneSerializer, OtpSerializer, ShortBookingSerializer, LongBookingSerializer, DeviceTokenSerializer
+from .serializers import PhoneSerializer, OtpSerializer, ShortBookingSerializer, LongBookingSerializer, DeviceTokenSerializer, GetBookingSerializer
 from .models import Account, RegisterVehicle, AssignDriver, Booking, DeviceToken
 from .sms import verifications, verification_checks
 from pyfcm import FCMNotification
@@ -75,7 +77,8 @@ def updateUser(request, user_id):
     if request.method == 'PUT':
         serializer = UserUpdateSerializer(user, data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            password = make_password(serializer.validated_data['password'])
+            serializer.save(password=password)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.error_messages, status=status.HTTP_400_BAD_REQUEST)
 
@@ -139,7 +142,8 @@ def manage_vehicles(request, vehicle_id):
 @ permission_classes([IsAuthenticated])
 def fetchShortVehicles(request):
     if request.method == 'GET':
-        queryset = RegisterVehicle.objects.get(category='Short Travel')
+        queryset = RegisterVehicle.objects.raw(
+            "SELECT * FROM api_registervehicle WHERE category='Short Travel'")
         serializer = RegisterVehicleSerializer(queryset, many=True)
         return Response(serializer.data)
 
@@ -229,7 +233,16 @@ def make_longbookings(request, vehicleid, driverid):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getBooking(request, booking_id):
+    booking = Booking.objects.get(id=booking_id)
+    serializer = GetBookingSerializer(booking)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
 # post method to store device token for fcm
+
+
 @api_view(['POST'])
 @permission_classes([])
 def store_device_token(request):
@@ -245,17 +258,19 @@ def store_device_token(request):
 # POST method to send notification to the vendors
 @api_view(['POST'])
 @permission_classes([])
-def send_notification(request):
+def send_notification(request, vehicle_id):
+    bookingid = Booking.objects.filter(Q(consumer=request.user) & Q(
+        vehicle=vehicle_id) & Q(status='pending'))
     push_service = FCMNotification(
         api_key="AAAAKKogqpw:APA91bFr5bcuuMRpGGNiti-oQi8stniJvZ4k8JDoMJUQ5I1XsjzOJq7Fesu5ZkG6PitkMTT_YUZqyq-O1DtCYHaJMNhnohtzcVcMs7LzdQ2-z8cNVPIFryUmOmVLoBXS1kRk_JteIzWE")
     message_title = "message for vendor"
     message_body = "body for vendor"
-    # data_message = {
-    #     "driver_id":"",
-    # }
+    datamessage = {
+        "booking_id": bookingid,
+    }
     registration_id = "c9pbFgRfRDKSoEsHC-w6Qh:APA91bEnygeiC6R9yDKdlky-tZGEkcVH3aGolRJTXxREK685IZzwYg-zIAQtK2quihTkRE-b5mikniMYAA_umNUNm9nuV6-DFmvO65HqMQGzspDJSaUvxnSMpIz7eBZ9d3mOkK2pfKSK"
     push_service.notify_single_device(
-        registration_id=registration_id, message_body=message_body, message_title=message_title)
+        registration_id=registration_id, message_body=message_body, message_title=message_title, data_message=datamessage)
     return Response(status=status.HTTP_410_GONE)
 
 

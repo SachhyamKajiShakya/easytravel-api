@@ -39,7 +39,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
-        fields = ['name', 'username', 'phone']
+        fields = ['email', 'name', 'username', 'phone', 'password']
 
 
 # serializer class for vehicle registration
@@ -90,3 +90,35 @@ class DeviceTokenSerializer(serializers.ModelSerializer):
     class Meta:
         model = DeviceToken
         fields = ['device_token']
+
+
+# model serializer for bookings
+class GetBookingSerializer(serializers.ModelSerializer):
+
+    customer_name = serializers.SerializerMethodField()
+    # customer_contact = serializers.MethodSerializerField()
+    # driver_name = serializers.MethodSerializerField()
+    # driver_contact = serializers.MethodSerializerField()
+    # vehicle_brand = serializers.MethodSerializerField()
+    # vehicle_model = serializers.MethodSerializerField()
+    # vehicle_price = serializers.MethodSerializerField()
+
+    class Meta:
+        model = Booking
+        fields = '__all__'
+
+    def get_customer_name(self, obj):
+        f_customer_name = obj.consumer.name
+        print(f_customer_name)
+        return f_customer_name
+    # def get_customer_contact(self, obj):
+
+    # def get_driver_name(self, obj):
+
+    # def get_driver_contact(self, obj):
+
+    # def get_vehicle_brand(self, obj):
+
+    # def get_vehicle_model(self, obj):
+
+    # def get_vehicle_price(self, obj):

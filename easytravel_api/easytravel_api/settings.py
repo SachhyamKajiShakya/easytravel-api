@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 
 from pathlib import Path
 import os
-import dj_database_url
+# import dj_database_url
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -26,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'gs5*-#8!yon-d+-e1356!tjums=i@ou=i0&_c6h3rk9-7!^jn#'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['192.168.100.67', '127.0.0.1',
                  'fyp-easytravel.herokuapp.com']
@@ -66,7 +66,7 @@ FCM_DJANGO_SETTINGS = {
 }
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+    # 'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -94,7 +94,7 @@ TEMPLATES = [
 ]
 
 
-WSGI_APPLICATION = 'easytravel_api.wsgi.application'
+# WSGI_APPLICATION = 'easytravel_api.wsgi.application'
 
 
 # Database
@@ -108,13 +108,11 @@ DATABASES = {
         'PASSWORD': 'easytravel',
         'HOST': 'localhost',
         'PORT': '5432',
-        # 'ENGINE': 'django.db.backend.sqlite3',
-        # 'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
 
-db_from_env = dj_database_url.config(conn_max_age=600)
-DATABASES['default'].update(db_from_env)
+# db_from_env = dj_database_url.config(conn_max_age=600)
+# DATABASES['default'].update(db_from_env)
 
 
 # Password validation
@@ -152,8 +150,6 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
-
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
 
 EMAIL_USE_TLS = True

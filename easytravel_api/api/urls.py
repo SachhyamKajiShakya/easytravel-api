@@ -25,7 +25,7 @@ urlpatterns = [
          make_shortbookings, name='shortbooking'),
     path('longbooking/<int:vehicleid>/<int:driverid>/',
          make_longbookings, name='longbooking'),
-    path('fcm/', send_notification, name="fcm"),
+    path('fcm/<int:vehicle_id>', send_notification, name="fcm"),
     path('storedevicetoken/', store_device_token, name='storedevicetoken'),
     path('managevehicles/<int:vehicle_id>',
          manage_vehicles, name='managevehicles'),

@@ -96,29 +96,43 @@ class DeviceTokenSerializer(serializers.ModelSerializer):
 class GetBookingSerializer(serializers.ModelSerializer):
 
     customer_name = serializers.SerializerMethodField()
-    # customer_contact = serializers.MethodSerializerField()
-    # driver_name = serializers.MethodSerializerField()
-    # driver_contact = serializers.MethodSerializerField()
-    # vehicle_brand = serializers.MethodSerializerField()
-    # vehicle_model = serializers.MethodSerializerField()
-    # vehicle_price = serializers.MethodSerializerField()
+    # customer_contact = serializers.SerializerMethodField()
+    # driver_name = serializers.SerializerMethodField()
+    # driver_contact = serializers.SerializerMethodField()
+    # vehicle_brand = serializers.SerializerMethodField()
+    # vehicle_model = serializers.SerializerMethodField()
+    # vehicle_price = serializers.SerializerMethodField()
 
     class Meta:
         model = Booking
-        fields = '__all__'
+        fields = ['customer_name', 'pick_up_date', 'pick_up_time', 'pick_up_province', 'pick_up_district', 'pick_up_city', 'pick_up_street',
+                  'destination_province', 'destination_district', 'destination_city', 'destination_street', 'number_of_days', 'status']
 
     def get_customer_name(self, obj):
         f_customer_name = obj.consumer.name
         print(f_customer_name)
         return f_customer_name
+
     # def get_customer_contact(self, obj):
+    #     f_customer_contact = obj.cusumer.phone
+    #     return f_customer_contact
 
     # def get_driver_name(self, obj):
+    #     f_driver_name = obj.driver.driverName
+    #     return f_driver_name
 
     # def get_driver_contact(self, obj):
+    #     f_driver_contact = obj.driver.driverContact
+    #     return f_driver_contact
 
     # def get_vehicle_brand(self, obj):
+    #     f_vehicle_brand = obj.vehicle.brand
+    #     return f_vehicle_brand
 
     # def get_vehicle_model(self, obj):
+    #     f_vehicle_model = obj.vehicle.model
+    #     return f_vehicle_model
 
     # def get_vehicle_price(self, obj):
+    #     f_vehicle_price = obj.vehicle.price
+    #     return f_vehicle_price

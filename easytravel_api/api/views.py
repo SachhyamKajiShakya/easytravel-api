@@ -178,7 +178,8 @@ def assign_driver(request):
 @api_view(['GET', 'PUT', 'DELETE'])
 @permission_classes([IsAuthenticated])
 def manageDriver(request, id):
-    driver = AssignDriver.objects.get(id=id)  # get driver of specific id
+    driver = AssignDriver.objects.get(
+        vehicleid=id)  # get driver of specific id
     if request.method == 'GET':
         queryset = AssignDriver.objects.filter(vehicleid=id)
         serializer = AssignDriverSerializer(queryset, many=True)
@@ -240,9 +241,8 @@ def getBooking(request, booking_id):
     serializer = GetBookingSerializer(booking)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
+
 # post method to store device token for fcm
-
-
 @api_view(['POST'])
 @permission_classes([])
 def store_device_token(request):

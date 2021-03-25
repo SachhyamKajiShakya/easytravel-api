@@ -150,4 +150,4 @@ class DeviceToken(models.Model):
         Account, on_delete=models.SET_NULL, null=True)
 
     def __str__(self):
-        return self.consumer_id
+        return self.device_token

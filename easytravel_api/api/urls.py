@@ -30,5 +30,5 @@ urlpatterns = [
     path('managevehicles/<int:vehicle_id>',
          manage_vehicles, name='managevehicles'),
     path('logout/', LogoutView.as_view(), name='logout'),
-    path('getbooking/<str:booking_id>', getBooking, name='getBooking'),
+    path('getbooking/<int:booking_id>', getBooking, name='getBooking'),
 ]

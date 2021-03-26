@@ -263,6 +263,8 @@ def send_notification(request, vehicle_id):
         vehicle=vehicle_id) & Q(status='pending'))
     bookingid = queryset.id
     vendorid = queryset.vehicle.vendor.id
+    category = queryset.vehicle.category
+    print(category)
     print(vehicle_id)
     print(bookingid)
     print(vendorid)
@@ -275,6 +277,7 @@ def send_notification(request, vehicle_id):
     message_body = "voyd for vendor",
     datamessage = {
         "booking_id": bookingid,
+        "category": category,
     }
     click_action = "FLUTTER_NOTIFICATION_CLICK"
     registration_id = deviceToken
@@ -286,7 +289,7 @@ def send_notification(request, vehicle_id):
 # POST method to send notificaitons to consumers
 @api_view(['POST'])
 @permission_classes([])
-def send_consumernotification(request, booking_id):
+def send_confirmnotification(request, booking_id):
     queryset = Booking.objects.get(id=booking_id)
     date = queryset.pick_up_date
     time = queryset.pick_up_time
@@ -297,7 +300,29 @@ def send_consumernotification(request, booking_id):
     push_service = FCMNotification(
         api_key="AAAAKKogqpw:APA91bFr5bcuuMRpGGNiti-oQi8stniJvZ4k8JDoMJUQ5I1XsjzOJq7Fesu5ZkG6PitkMTT_YUZqyq-O1DtCYHaJMNhnohtzcVcMs7LzdQ2-z8cNVPIFryUmOmVLoBXS1kRk_JteIzWE")
     message_title = "Booking Confirmed"
-    message_body = "Your booking has been confirmed for "+date+time
+    message_body = "Your booking has been confirmed for "+date+" "+time
+    registration_id = "c9pbFgRfRDKSoEsHC-w6Qh:APA91bEnygeiC6R9yDKdlky-tZGEkcVH3aGolRJTXxREK685IZzwYg-zIAQtK2quihTkRE-b5mikniMYAA_umNUNm9nuV6-DFmvO65HqMQGzspDJSaUvxnSMpIz7eBZ9d3mOkK2pfKSK"
+    push_service.notify_single_device(
+        registration_id=registration_id, message_body=message_body, message_title=message_title)
+    return Response(status=status.HTTP_410_GONE)
+
+    # POST method to send notificaitons to consumers
+
+
+@api_view(['POST'])
+@permission_classes([])
+def send_cancelnotification(request, booking_id):
+    queryset = Booking.objects.get(id=booking_id)
+    date = queryset.pick_up_date
+    time = queryset.pick_up_time
+    consumer = queryset.consumer.id
+    print(date)
+    print(time)
+    print(consumer)
+    push_service = FCMNotification(
+        api_key="AAAAKKogqpw:APA91bFr5bcuuMRpGGNiti-oQi8stniJvZ4k8JDoMJUQ5I1XsjzOJq7Fesu5ZkG6PitkMTT_YUZqyq-O1DtCYHaJMNhnohtzcVcMs7LzdQ2-z8cNVPIFryUmOmVLoBXS1kRk_JteIzWE")
+    message_title = "Booking Cancelled"
+    message_body = "Your booking has been cancelled for "+date+" "+time
     registration_id = "c9pbFgRfRDKSoEsHC-w6Qh:APA91bEnygeiC6R9yDKdlky-tZGEkcVH3aGolRJTXxREK685IZzwYg-zIAQtK2quihTkRE-b5mikniMYAA_umNUNm9nuV6-DFmvO65HqMQGzspDJSaUvxnSMpIz7eBZ9d3mOkK2pfKSK"
     push_service.notify_single_device(
         registration_id=registration_id, message_body=message_body, message_title=message_title)

@@ -261,9 +261,12 @@ def store_device_token(request):
 def send_notification(request, vehicle_id):
     queryset = Booking.objects.get(Q(consumer=request.user) & Q(
         vehicle=vehicle_id) & Q(status='pending'))
-    bookingid = queryset.vehicle.vendor.id
+    bookingid = queryset.id
+    vendorid = queryset.vehicle.vendor.id
+    print(vehicle_id)
     print(bookingid)
-    deviceid = DeviceToken.objects.get(consumer_id=bookingid)
+    print(vendorid)
+    deviceid = DeviceToken.objects.get(consumer_id=vendorid)
     deviceToken = deviceid.device_token
     print(deviceToken)
     push_service = FCMNotification(
@@ -283,11 +286,18 @@ def send_notification(request, vehicle_id):
 # POST method to send notificaitons to consumers
 @api_view(['POST'])
 @permission_classes([])
-def send_consumernotification(request):
+def send_consumernotification(request, booking_id):
+    queryset = Booking.objects.get(id=booking_id)
+    date = queryset.pick_up_date
+    time = queryset.pick_up_time
+    consumer = queryset.consumer.id
+    print(date)
+    print(time)
+    print(consumer)
     push_service = FCMNotification(
         api_key="AAAAKKogqpw:APA91bFr5bcuuMRpGGNiti-oQi8stniJvZ4k8JDoMJUQ5I1XsjzOJq7Fesu5ZkG6PitkMTT_YUZqyq-O1DtCYHaJMNhnohtzcVcMs7LzdQ2-z8cNVPIFryUmOmVLoBXS1kRk_JteIzWE")
-    message_title = "message for consumer"
-    message_body = "body for consumer"
+    message_title = "Booking Confirmed"
+    message_body = "Your booking has been confirmed for "+date+time
     registration_id = "c9pbFgRfRDKSoEsHC-w6Qh:APA91bEnygeiC6R9yDKdlky-tZGEkcVH3aGolRJTXxREK685IZzwYg-zIAQtK2quihTkRE-b5mikniMYAA_umNUNm9nuV6-DFmvO65HqMQGzspDJSaUvxnSMpIz7eBZ9d3mOkK2pfKSK"
     push_service.notify_single_device(
         registration_id=registration_id, message_body=message_body, message_title=message_title)

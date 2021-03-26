@@ -178,7 +178,8 @@ def assign_driver(request):
 @api_view(['GET', 'PUT', 'DELETE'])
 @permission_classes([IsAuthenticated])
 def manageDriver(request, id):
-    driver = AssignDriver.objects.get(id=id)  # get driver of specific id
+    driver = AssignDriver.objects.get(
+        vehicleid=id)  # get driver of specific id
     if request.method == 'GET':
         queryset = AssignDriver.objects.filter(vehicleid=id)
         serializer = AssignDriverSerializer(queryset, many=True)
@@ -240,9 +241,8 @@ def getBooking(request, booking_id):
     serializer = GetBookingSerializer(booking)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
+
 # post method to store device token for fcm
-
-
 @api_view(['POST'])
 @permission_classes([])
 def store_device_token(request):
@@ -259,19 +259,25 @@ def store_device_token(request):
 @api_view(['POST'])
 @permission_classes([])
 def send_notification(request, vehicle_id):
-    bookingid = Booking.objects.filter(Q(consumer=request.user) & Q(
+    queryset = Booking.objects.get(Q(consumer=request.user) & Q(
         vehicle=vehicle_id) & Q(status='pending'))
+    bookingid = queryset.vehicle.vendor.id
+    print(bookingid)
+    deviceid = DeviceToken.objects.get(consumer_id=bookingid)
+    deviceToken = deviceid.device_token
+    print(deviceToken)
     push_service = FCMNotification(
         api_key="AAAAKKogqpw:APA91bFr5bcuuMRpGGNiti-oQi8stniJvZ4k8JDoMJUQ5I1XsjzOJq7Fesu5ZkG6PitkMTT_YUZqyq-O1DtCYHaJMNhnohtzcVcMs7LzdQ2-z8cNVPIFryUmOmVLoBXS1kRk_JteIzWE")
     message_title = "message for vendor"
-    message_body = "body for vendor"
+    message_body = "voyd for vendor",
     datamessage = {
         "booking_id": bookingid,
     }
-    registration_id = "c9pbFgRfRDKSoEsHC-w6Qh:APA91bEnygeiC6R9yDKdlky-tZGEkcVH3aGolRJTXxREK685IZzwYg-zIAQtK2quihTkRE-b5mikniMYAA_umNUNm9nuV6-DFmvO65HqMQGzspDJSaUvxnSMpIz7eBZ9d3mOkK2pfKSK"
+    click_action = "FLUTTER_NOTIFICATION_CLICK"
+    registration_id = deviceToken
     push_service.notify_single_device(
-        registration_id=registration_id, message_body=message_body, message_title=message_title, data_message=datamessage)
-    return Response(status=status.HTTP_410_GONE)
+        registration_id=registration_id, click_action=click_action, message_body=message_body, message_title=message_title, data_message=datamessage)
+    return Response()
 
 
 # POST method to send notificaitons to consumers

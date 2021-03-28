@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate, logout as django_logout
 from django.contrib.auth.hashers import make_password
 from django.conf import settings
 from django.db.models import Q
-
+import datetime
 # imports to be made from rest framework
 from rest_framework import status
 from rest_framework.response import Response
@@ -23,34 +23,34 @@ from pyfcm import FCMNotification
 
 
 # post method to enter the phone number and send otp
-# @api_view(['POST'])
-# @permission_classes([])
-# def phone_verification(request):
-#     if request.method == 'POST':
-#         serializer = PhoneSerializer(data=request.data)
-#         if serializer.is_valid():
-#             request.session['phone'] = serializer.data['phone']
-#             verification = verifications(
-#                 request.session['phone'], 'sms')
-#             print(request.session['phone'])
-#         return Response({'phoneNumber': request.session['phone']})
+@api_view(['POST'])
+@permission_classes([])
+def phone_verification(request):
+    if request.method == 'POST':
+        serializer = PhoneSerializer(data=request.data)
+        if serializer.is_valid():
+            request.session['phone'] = serializer.data['phone']
+            verification = verifications(
+                request.session['phone'], 'sms')
+            print(request.session['phone'])
+        return Response({'phoneNumber': request.session['phone']})
 
 
 # post method to check the entered otp code
-# @api_view(['POST'])
-# @permission_classes([])
-# def otp_verification(request):
-#     if request.method == 'POST':
-#         serializer = OtpSerializer(data=request.data)
-#         if serializer.is_valid():
-#             print(serializer.data['otp'])
-#             print(serializer.data['phoneNumber'])
-#             verification = verification_checks(
-#                 serializer.data['phoneNumber'], serializer.data['otp'])
-#             if verification.status == 'approved':
-#                 print(request.session['phoneNumber'])
-#                 return Response({'status': verification.status})
-#         return Response(serializer.data)
+@api_view(['POST'])
+@permission_classes([])
+def otp_verification(request):
+    if request.method == 'POST':
+        serializer = OtpSerializer(data=request.data)
+        if serializer.is_valid():
+            print(serializer.data['otp'])
+            print(serializer.data['phoneNumber'])
+            verification = verification_checks(
+                serializer.data['phoneNumber'], serializer.data['otp'])
+            if verification.status == 'approved':
+                print(request.session['phoneNumber'])
+                return Response({'status': verification.status})
+        return Response(serializer.data)
 
 
 # method based api function to register user
@@ -234,6 +234,7 @@ def make_longbookings(request, vehicleid, driverid):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+# get method to get details of a specific booking
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def getBooking(request, booking_id):
@@ -273,8 +274,8 @@ def send_notification(request, vehicle_id):
     print(deviceToken)
     push_service = FCMNotification(
         api_key="AAAAKKogqpw:APA91bFr5bcuuMRpGGNiti-oQi8stniJvZ4k8JDoMJUQ5I1XsjzOJq7Fesu5ZkG6PitkMTT_YUZqyq-O1DtCYHaJMNhnohtzcVcMs7LzdQ2-z8cNVPIFryUmOmVLoBXS1kRk_JteIzWE")
-    message_title = "message for vendor"
-    message_body = "voyd for vendor",
+    message_title = "Booking Request"
+    message_body = "A booking request had been made for your vehicle",
     datamessage = {
         "booking_id": bookingid,
         "category": category,
@@ -286,44 +287,80 @@ def send_notification(request, vehicle_id):
     return Response()
 
 
-# POST method to send notificaitons to consumers
+# POST method to send confirmed notificaitons to consumers
 @api_view(['POST'])
 @permission_classes([])
 def send_confirmnotification(request, booking_id):
+    updateQuery = Booking.objects.filter(
+        id=booking_id).update(status='Confirmed')
     queryset = Booking.objects.get(id=booking_id)
     date = queryset.pick_up_date
     time = queryset.pick_up_time
     consumer = queryset.consumer.id
-    print(date)
-    print(time)
-    print(consumer)
+    deviceToken = DeviceToken.objects.get(consumer_id=consumer)
+    registrationid = deviceToken.device_token
     push_service = FCMNotification(
         api_key="AAAAKKogqpw:APA91bFr5bcuuMRpGGNiti-oQi8stniJvZ4k8JDoMJUQ5I1XsjzOJq7Fesu5ZkG6PitkMTT_YUZqyq-O1DtCYHaJMNhnohtzcVcMs7LzdQ2-z8cNVPIFryUmOmVLoBXS1kRk_JteIzWE")
     message_title = "Booking Confirmed"
-    message_body = "Your booking has been confirmed for "+date+" "+time
-    registration_id = "c9pbFgRfRDKSoEsHC-w6Qh:APA91bEnygeiC6R9yDKdlky-tZGEkcVH3aGolRJTXxREK685IZzwYg-zIAQtK2quihTkRE-b5mikniMYAA_umNUNm9nuV6-DFmvO65HqMQGzspDJSaUvxnSMpIz7eBZ9d3mOkK2pfKSK"
+    message_body = "Your booking has been confirmed for {} {}".format(
+        date, time)
+    registration_id = registrationid
     push_service.notify_single_device(
         registration_id=registration_id, message_body=message_body, message_title=message_title)
-    return Response(status=status.HTTP_410_GONE)
-
-    # POST method to send notificaitons to consumers
+    return Response(status=status.HTTP_200_OK)
 
 
+# POST method to send cancelled notificaitons to consumers
 @api_view(['POST'])
 @permission_classes([])
 def send_cancelnotification(request, booking_id):
+    updateQuery = Booking.objects.filter(
+        id=booking_id).update(status='Cancelled')
     queryset = Booking.objects.get(id=booking_id)
     date = queryset.pick_up_date
     time = queryset.pick_up_time
     consumer = queryset.consumer.id
-    print(date)
-    print(time)
-    print(consumer)
+    deviceToken = DeviceToken.objects.get(consumer_id=consumer)
+    registrationid = deviceToken.device_token
     push_service = FCMNotification(
         api_key="AAAAKKogqpw:APA91bFr5bcuuMRpGGNiti-oQi8stniJvZ4k8JDoMJUQ5I1XsjzOJq7Fesu5ZkG6PitkMTT_YUZqyq-O1DtCYHaJMNhnohtzcVcMs7LzdQ2-z8cNVPIFryUmOmVLoBXS1kRk_JteIzWE")
     message_title = "Booking Cancelled"
-    message_body = "Your booking has been cancelled for "+date+" "+time
-    registration_id = "c9pbFgRfRDKSoEsHC-w6Qh:APA91bEnygeiC6R9yDKdlky-tZGEkcVH3aGolRJTXxREK685IZzwYg-zIAQtK2quihTkRE-b5mikniMYAA_umNUNm9nuV6-DFmvO65HqMQGzspDJSaUvxnSMpIz7eBZ9d3mOkK2pfKSK"
+    message_body = "Your booking has been cancelled for {} {}".format(
+        date, time)
+    registration_id = registrationid
     push_service.notify_single_device(
         registration_id=registration_id, message_body=message_body, message_title=message_title)
-    return Response(status=status.HTTP_410_GONE)
+    return Response(status=status.HTTP_200_OK)
+
+
+# get method to get past bookings of a user
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getPastBookings(request):
+    today = datetime.datetime.now().date()
+    queryset = Booking.objects.all().filter(
+        consumer=request.user, pick_up_date__lt=today)
+    print(queryset)
+    serializer = GetBookingSerializer(queryset, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+# get method to get future bokings of a user
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getFutureBookings(request):
+    today = datetime.datetime.now().date()
+    queryset = Booking.objects.all().filter(
+        consumer=request.user, pick_up_date__gt=today)
+    print(queryset)
+    serializer = GetBookingSerializer(queryset, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+# get method to get posted vehicles of a user
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getPostedvehicles(request):
+    queryset = RegisterVehicle.objects.all().filter(vendor=request.user)
+    serializer = RegisterVehicleSerializer(queryset, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)

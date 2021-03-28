@@ -121,7 +121,7 @@ class AssignDriver(models.Model):
 # model class to store booking details
 class Booking(models.Model):
     date_of_booking = models.DateTimeField(default=datetime.now, null=False)
-    pick_up_date = models.CharField(max_length=12, null=False)
+    pick_up_date = models.DateField(null=False)
     pick_up_time = models.CharField(max_length=8, null=False)
     pick_up_province = models.IntegerField(null=True)
     pick_up_district = models.CharField(max_length=30, null=False, default='')

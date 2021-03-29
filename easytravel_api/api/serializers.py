@@ -102,11 +102,12 @@ class GetBookingSerializer(serializers.ModelSerializer):
     vehicle_brand = serializers.SerializerMethodField()
     vehicle_model = serializers.SerializerMethodField()
     vehicle_price = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
 
     class Meta:
         model = Booking
         fields = ['customer_name', 'customer_contact', 'driver_name', 'driver_contact', 'vehicle_brand', 'vehicle_model', 'vehicle_price', 'pick_up_date', 'pick_up_time', 'pick_up_province', 'pick_up_district', 'pick_up_city', 'pick_up_street',
-                  'destination_province', 'destination_district', 'destination_city', 'destination_street', 'number_of_days', 'status']
+                  'destination_province', 'destination_district', 'destination_city', 'destination_street', 'number_of_days', 'status', 'image']
 
     def get_customer_name(self, obj):
         f_customer_name = obj.consumer.name
@@ -134,4 +135,8 @@ class GetBookingSerializer(serializers.ModelSerializer):
 
     def get_vehicle_price(self, obj):
         f_vehicle_price = obj.vehicle.price
+        print(obj.vehicle.vehicleImage)
         return f_vehicle_price
+
+    def get_image(self, obj):
+        return 'http://192.168.100.67:8000/media/{}'.format(obj.vehicle.vehicleImage)

@@ -22,35 +22,35 @@ from .sms import verifications, verification_checks
 from pyfcm import FCMNotification
 
 
-# post method to enter the phone number and send otp
-@api_view(['POST'])
-@permission_classes([])
-def phone_verification(request):
-    if request.method == 'POST':
-        serializer = PhoneSerializer(data=request.data)
-        if serializer.is_valid():
-            request.session['phone'] = serializer.data['phone']
-            verification = verifications(
-                request.session['phone'], 'sms')
-            print(request.session['phone'])
-        return Response({'phoneNumber': request.session['phone']})
+# # post method to enter the phone number and send otp
+# @api_view(['POST'])
+# @permission_classes([])
+# def phone_verification(request):
+#     if request.method == 'POST':
+#         serializer = PhoneSerializer(data=request.data)
+#         if serializer.is_valid():
+#             request.session['phone'] = serializer.data['phone']
+#             verification = verifications(
+#                 request.session['phone'], 'sms')
+#             print(request.session['phone'])
+#         return Response({'phoneNumber': request.session['phone']})
 
 
-# post method to check the entered otp code
-@api_view(['POST'])
-@permission_classes([])
-def otp_verification(request):
-    if request.method == 'POST':
-        serializer = OtpSerializer(data=request.data)
-        if serializer.is_valid():
-            print(serializer.data['otp'])
-            print(serializer.data['phoneNumber'])
-            verification = verification_checks(
-                serializer.data['phoneNumber'], serializer.data['otp'])
-            if verification.status == 'approved':
-                print(request.session['phoneNumber'])
-                return Response({'status': verification.status})
-        return Response(serializer.data)
+# # post method to check the entered otp code
+# @api_view(['POST'])
+# @permission_classes([])
+# def otp_verification(request):
+#     if request.method == 'POST':
+#         serializer = OtpSerializer(data=request.data)
+#         if serializer.is_valid():
+#             print(serializer.data['otp'])
+#             print(serializer.data['phoneNumber'])
+#             verification = verification_checks(
+#                 serializer.data['phoneNumber'], serializer.data['otp'])
+#             if verification.status == 'approved':
+#                 print(request.session['phoneNumber'])
+#                 return Response({'status': verification.status})
+#         return Response(serializer.data)
 
 
 # method based api function to register user
@@ -99,6 +99,16 @@ class LogoutView(APIView):
     def post(self, request):
         request.user.auth_token.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getUserData(request):
+    user = request.user.email
+    if request.method == 'GET':
+        queryset = Account.objects.get(email=user)
+        serializer = UserRegistrationSerializer(queryset)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 # function based api method to register vehicle
@@ -265,10 +275,6 @@ def send_notification(request, vehicle_id):
     bookingid = queryset.id
     vendorid = queryset.vehicle.vendor.id
     category = queryset.vehicle.category
-    print(category)
-    print(vehicle_id)
-    print(bookingid)
-    print(vendorid)
     deviceid = DeviceToken.objects.get(consumer_id=vendorid)
     deviceToken = deviceid.device_token
     print(deviceToken)
@@ -340,8 +346,8 @@ def getPastBookings(request):
     today = datetime.datetime.now().date()
     queryset = Booking.objects.all().filter(
         consumer=request.user, pick_up_date__lt=today)
-    print(queryset)
-    serializer = GetBookingSerializer(queryset, many=True)
+    serializer = GetBookingSerializer(
+        queryset, many=True, context={'request': request})
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -351,9 +357,9 @@ def getPastBookings(request):
 def getFutureBookings(request):
     today = datetime.datetime.now().date()
     queryset = Booking.objects.all().filter(
-        consumer=request.user, pick_up_date__gt=today)
-    print(queryset)
-    serializer = GetBookingSerializer(queryset, many=True)
+        consumer=request.user, pick_up_date__gt=today, status='Confirmed')
+    serializer = GetBookingSerializer(
+        queryset, many=True, context={'request': request})
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 

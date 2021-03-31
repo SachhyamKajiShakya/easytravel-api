@@ -2,17 +2,13 @@ from django.urls import path
 from rest_framework.authtoken.views import obtain_auth_token
 from fcm_django.api.rest_framework import FCMDeviceAuthorizedViewSet
 from api import views
-# from .views import user_registration, register_vehicle, CustomAuthToken, assign_driver
-# from .views import fetchShortVehicles, fetchLongVehicles, manageDriver, make_shortbookings, make_longbookings, send_notification
-# from .views import store_device_token, manage_vehicles, LogoutView, updateUser, getBooking, send_confirmnotification
-# phone_verification, otp_verification
 
 
 app_name = 'api'
 
 urlpatterns = [
     path('register/', views.user_registration, name='register'),
-    path('updateuser/<int:user_id>', views.updateUser, name='updateuser'),
+    path('updateuser/', views.updateUser, name='updateuser'),
     path('login/', views.CustomAuthToken.as_view(), name="login"),
     path('vehicle/', views.register_vehicle, name='vehicle'),
     path('driver/', views.assign_driver, name='driver'),
@@ -41,4 +37,5 @@ urlpatterns = [
     path('futurebookings', views.getFutureBookings, name='cancelmessage'),
     path('postedvehicles', views.getPostedvehicles, name='postedvehicles'),
     path('getuserdata', views.getUserData, name='getuserdata'),
+    path('updatepassword', views.UpdatePassword.as_view(), name='updatepassword'),
 ]

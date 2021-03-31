@@ -5,7 +5,7 @@ from django.conf import settings
 from django.db.models import Q
 import datetime
 # imports to be made from rest framework
-from rest_framework import status
+from rest_framework import status, generics
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.authtoken.models import Token
@@ -15,8 +15,7 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.parsers import JSONParser
 
 # imports to be made locally
-from .serializers import UserRegistrationSerializer, RegisterVehicleSerializer, AssignDriverSerializer, UserUpdateSerializer
-from .serializers import PhoneSerializer, OtpSerializer, ShortBookingSerializer, LongBookingSerializer, DeviceTokenSerializer, GetBookingSerializer
+from api import serializers
 from .models import Account, RegisterVehicle, AssignDriver, Booking, DeviceToken
 from .sms import verifications, verification_checks
 from pyfcm import FCMNotification
@@ -58,7 +57,7 @@ from pyfcm import FCMNotification
 @permission_classes([])  # setting permission class to null
 def user_registration(request):
     if request.method == 'POST':
-        serializer = UserRegistrationSerializer(data=request.data)
+        serializer = serializers.UserRegistrationSerializer(data=request.data)
         data = {}
         if serializer.is_valid():
             account = serializer.save()
@@ -72,15 +71,36 @@ def user_registration(request):
 # api put method to edit user data
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
-def updateUser(request, user_id):
-    user = Account.objects.get(id=user_id)
+def updateUser(request):
+    userid = request.user.id
+    user = Account.objects.get(id=userid)
     if request.method == 'PUT':
-        serializer = UserUpdateSerializer(user, data=request.data)
+        serializer = serializers.UserUpdateSerializer(user, data=request.data)
         if serializer.is_valid():
-            password = make_password(serializer.validated_data['password'])
-            serializer.save(password=password)
+            serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.error_messages, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# APIview class to update password of the user
+class UpdatePassword(generics.UpdateAPIView):
+    model = Account
+    permission_classes = (IsAuthenticated),
+
+    def get_object(self, queryset=None):
+        obj = self.request.user
+        return obj
+
+    def put(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        serializer = serializers.UpdatePasswordSerializer(data=request.data)
+        if serializer.is_valid():
+            if not self.object.check_password(serializer.data.get("oldpassword")):
+                return Response("WRong password", status=status.HTTP_400_BAD_REQUEST)
+            self.object.set_password(serializer.data.get("newpassword"))
+            self.object.save()
+            return Response("Password Changed", status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 # class based view to login user
@@ -98,16 +118,17 @@ class CustomAuthToken(ObtainAuthToken):
 class LogoutView(APIView):
     def post(self, request):
         request.user.auth_token.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_200_OK)
 
 
+# api method to get user data
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def getUserData(request):
     user = request.user.email
     if request.method == 'GET':
         queryset = Account.objects.get(email=user)
-        serializer = UserRegistrationSerializer(queryset)
+        serializer = serializers.UserUpdateSerializer(queryset)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -118,7 +139,7 @@ def getUserData(request):
 def register_vehicle(request):
     vendor = request.user
     if request.method == 'POST':
-        serializer = RegisterVehicleSerializer(data=request.data)
+        serializer = serializers.RegisterVehicleSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(vendor=vendor)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -131,7 +152,8 @@ def register_vehicle(request):
 def manage_vehicles(request, vehicle_id):
     vehicle = RegisterVehicle.objects.get(id=vehicle_id)
     if request.method == "PUT":
-        serializer = RegisterVehicleSerializer(vehicle, data=request.data)
+        serializer = serializers.RegisterVehicleSerializer(
+            vehicle, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -154,7 +176,7 @@ def fetchShortVehicles(request):
     if request.method == 'GET':
         queryset = RegisterVehicle.objects.raw(
             "SELECT * FROM api_registervehicle WHERE category='Short Travel'")
-        serializer = RegisterVehicleSerializer(queryset, many=True)
+        serializer = serializers.RegisterVehicleSerializer(queryset, many=True)
         return Response(serializer.data)
 
 
@@ -165,7 +187,7 @@ def fetchLongVehicles(request):
     if request.method == 'GET':
         queryset = RegisterVehicle.objects.raw(
             "SELECT * FROM api_registervehicle WHERE category='Long Travel'")
-        serializer = RegisterVehicleSerializer(queryset, many=True)
+        serializer = serializers.RegisterVehicleSerializer(queryset, many=True)
         return Response(serializer.data)
 
 
@@ -177,7 +199,7 @@ def assign_driver(request):
     registeredVehicleId = RegisterVehicle.objects.latest('id').pk
     registeredVehicle = RegisterVehicle.objects.get(id=registeredVehicleId)
     if request.method == 'POST':
-        serializer = AssignDriverSerializer(data=request.data)
+        serializer = serializers.AssignDriverSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(vehicleid=registeredVehicle)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -192,11 +214,12 @@ def manageDriver(request, id):
         vehicleid=id)  # get driver of specific id
     if request.method == 'GET':
         queryset = AssignDriver.objects.filter(vehicleid=id)
-        serializer = AssignDriverSerializer(queryset, many=True)
+        serializer = serializers.AssignDriverSerializer(queryset, many=True)
         return Response(serializer.data)
 
     if request.method == 'PUT':
-        serializer = AssignDriverSerializer(driver, data=request.data)
+        serializer = serializers.AssignDriverSerializer(
+            driver, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -220,7 +243,7 @@ def make_shortbookings(request, vehicleid, driverid):
     booked_vehicle = RegisterVehicle.objects.get(id=vehicleid)
     consumer = request.user
     if request.method == 'POST':
-        serializer = ShortBookingSerializer(data=request.data)
+        serializer = serializers.ShortBookingSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(vehicle=booked_vehicle, driver=assigned_driver,
                             consumer=consumer)
@@ -236,7 +259,7 @@ def make_longbookings(request, vehicleid, driverid):
     booked_vehicle = RegisterVehicle.objects.get(id=vehicleid)
     consumer = request.user
     if request.method == 'POST':
-        serializer = LongBookingSerializer(data=request.data)
+        serializer = serializers.LongBookingSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(vehicle=booked_vehicle, driver=assigned_driver,
                             consumer=consumer)
@@ -249,7 +272,7 @@ def make_longbookings(request, vehicleid, driverid):
 @permission_classes([IsAuthenticated])
 def getBooking(request, booking_id):
     booking = Booking.objects.get(id=booking_id)
-    serializer = GetBookingSerializer(booking)
+    serializer = serializers.GetBookingSerializer(booking)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -259,7 +282,7 @@ def getBooking(request, booking_id):
 def store_device_token(request):
     consumer = request.user
     if request.method == 'POST':
-        serializer = DeviceTokenSerializer(data=request.data)
+        serializer = serializers.DeviceTokenSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(consumer_id=consumer)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -310,9 +333,14 @@ def send_confirmnotification(request, booking_id):
     message_title = "Booking Confirmed"
     message_body = "Your booking has been confirmed for {} {}".format(
         date, time)
+    datamessage = {
+        "screen": "payment",
+        "bookingid": booking_id,
+    }
+    click_action = "FLUTTER_NOTIFICATION_CLICK"
     registration_id = registrationid
     push_service.notify_single_device(
-        registration_id=registration_id, message_body=message_body, message_title=message_title)
+        registration_id=registration_id, click_action=click_action, message_body=message_body, message_title=message_title, data_message=datamessage)
     return Response(status=status.HTTP_200_OK)
 
 
@@ -346,7 +374,7 @@ def getPastBookings(request):
     today = datetime.datetime.now().date()
     queryset = Booking.objects.all().filter(
         consumer=request.user, pick_up_date__lt=today)
-    serializer = GetBookingSerializer(
+    serializer = serializers.GetBookingSerializer(
         queryset, many=True, context={'request': request})
     return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -358,7 +386,7 @@ def getFutureBookings(request):
     today = datetime.datetime.now().date()
     queryset = Booking.objects.all().filter(
         consumer=request.user, pick_up_date__gt=today, status='Confirmed')
-    serializer = GetBookingSerializer(
+    serializer = serializers.GetBookingSerializer(
         queryset, many=True, context={'request': request})
     return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -368,5 +396,5 @@ def getFutureBookings(request):
 @permission_classes([IsAuthenticated])
 def getPostedvehicles(request):
     queryset = RegisterVehicle.objects.all().filter(vendor=request.user)
-    serializer = RegisterVehicleSerializer(queryset, many=True)
+    serializer = serializers.RegisterVehicleSerializer(queryset, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)

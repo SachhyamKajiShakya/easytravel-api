@@ -39,7 +39,13 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
-        fields = ['email', 'name', 'username', 'phone', 'password']
+        fields = ['email', 'name', 'username', 'phone']
+
+
+# creating model serialzier to update user password
+class UpdatePasswordSerializer(serializers.Serializer):
+    oldpassword = serializers.CharField(required=True)
+    newpassword = serializers.CharField(required=True)
 
 
 # serializer class for vehicle registration

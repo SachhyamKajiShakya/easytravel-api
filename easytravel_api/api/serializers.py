@@ -56,6 +56,14 @@ class RegisterVehicleSerializer(serializers.ModelSerializer):
                   'service', 'description', 'price', 'vehicleImage', 'bluebookImage']
 
 
+# serializer class for updating vehicle
+class UpdateVehicleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RegisterVehicle
+        fields = ['brand', 'model', 'licenseNumber',
+                  'category', 'service', 'description', 'price']
+
+
 # model serialzier for posting driver
 class AssignDriverSerializer(serializers.ModelSerializer):
     class Meta:

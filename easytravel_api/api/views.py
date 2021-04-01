@@ -152,7 +152,7 @@ def register_vehicle(request):
 def manage_vehicles(request, vehicle_id):
     vehicle = RegisterVehicle.objects.get(id=vehicle_id)
     if request.method == "PUT":
-        serializer = serializers.RegisterVehicleSerializer(
+        serializer = serializers.UpdateVehicleSerializer(
             vehicle, data=request.data)
         if serializer.is_valid():
             serializer.save()

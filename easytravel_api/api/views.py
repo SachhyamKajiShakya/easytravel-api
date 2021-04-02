@@ -251,6 +251,33 @@ def make_shortbookings(request, vehicleid, driverid):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+# update method to update booking details
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_shortbookings(request, booking_id):
+    queryset = Booking.objects.get(id=booking_id)
+    serializer = serializers.UpdateShortBookingSerializer(
+        queryset, data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    print(serializer.errors)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# update method to update booking details
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_longbookings(request, booking_id):
+    queryset = Booking.objects.get(id=booking_id)
+    serializer = serializers.UpdateLongBookingSerializer(
+        queryset, data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 # api method to enter vehicle for long booking
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -313,7 +340,7 @@ def send_notification(request, vehicle_id):
     registration_id = deviceToken
     push_service.notify_single_device(
         registration_id=registration_id, click_action=click_action, message_body=message_body, message_title=message_title, data_message=datamessage)
-    return Response()
+    return Response(status=status.HTTP_200_OK)
 
 
 # POST method to send confirmed notificaitons to consumers
@@ -367,6 +394,30 @@ def send_cancelnotification(request, booking_id):
     return Response(status=status.HTTP_200_OK)
 
 
+@api_view(['POST'])
+@permission_classes([])
+def sendvendor_cancelmessage(request, booking_id):
+    updateQuery = Booking.objects.filter(
+        id=booking_id).update(status='Cancelled')
+    queryset = Booking.objects.get(id=booking_id)
+    date = queryset.pick_up_date
+    time = queryset.pick_up_time
+    vehiclename = queryset.vehicle.brand
+    vehiclemodel = queryset.vehicle.model
+    vendorid = queryset.vehicle.vendor.id
+    deviceToken = DeviceToken.objects.get(consumer_id=vendorid)
+    registrationid = deviceToken.device_token
+    push_service = FCMNotification(
+        api_key="AAAAKKogqpw:APA91bFr5bcuuMRpGGNiti-oQi8stniJvZ4k8JDoMJUQ5I1XsjzOJq7Fesu5ZkG6PitkMTT_YUZqyq-O1DtCYHaJMNhnohtzcVcMs7LzdQ2-z8cNVPIFryUmOmVLoBXS1kRk_JteIzWE")
+    message_title = "Booking Cancelled"
+    message_body = "Your booking for {} {} made on {} {} has been cancelled.".format(
+        vehiclename, vehiclemodel, date, time)
+    registration_id = registrationid
+    push_service.notify_single_device(
+        registration_id=registration_id, message_body=message_body, message_title=message_title)
+    return Response(status=status.HTTP_200_OK)
+
+
 # get method to get past bookings of a user
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -385,7 +436,7 @@ def getPastBookings(request):
 def getFutureBookings(request):
     today = datetime.datetime.now().date()
     queryset = Booking.objects.all().filter(
-        consumer=request.user, pick_up_date__gt=today, status='Confirmed')
+        consumer=request.user, pick_up_date__gt=today)
     serializer = serializers.GetBookingSerializer(
         queryset, many=True, context={'request': request})
     return Response(serializer.data, status=status.HTTP_200_OK)

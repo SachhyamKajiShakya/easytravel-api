@@ -91,11 +91,27 @@ class ShortBookingSerializer(serializers.ModelSerializer):
                   'pick_up_street', 'destination_district', 'destination_city', 'destination_street']
 
 
+# model serialzier for posting short booking vehicles
+class UpdateShortBookingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Booking
+        fields = ['pick_up_date', 'pick_up_time', 'pick_up_district', 'pick_up_city',
+                  'pick_up_street', 'destination_district', 'destination_city', 'destination_street']
+
+
 # model serializer for posting long booking vehicles
 class LongBookingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Booking
         fields = ['id', 'pick_up_province', 'number_of_days', 'pick_up_district', 'pick_up_city', 'pick_up_street', 'pick_up_date', 'pick_up_time', 'destination_province',
+                  'destination_district', 'destination_city', 'destination_street']
+
+
+# model serializer for posting long booking vehicles
+class UpdateLongBookingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Booking
+        fields = ['pick_up_province', 'number_of_days', 'pick_up_district', 'pick_up_city', 'pick_up_street', 'pick_up_date', 'pick_up_time', 'destination_province',
                   'destination_district', 'destination_city', 'destination_street']
 
 
@@ -120,7 +136,7 @@ class GetBookingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Booking
-        fields = ['customer_name', 'customer_contact', 'driver_name', 'driver_contact', 'vehicle_brand', 'vehicle_model', 'vehicle_price', 'pick_up_date', 'pick_up_time', 'pick_up_province', 'pick_up_district', 'pick_up_city', 'pick_up_street',
+        fields = ['id', 'customer_name', 'customer_contact', 'driver_name', 'driver_contact', 'vehicle_brand', 'vehicle_model', 'vehicle_price', 'pick_up_date', 'pick_up_time', 'pick_up_province', 'pick_up_district', 'pick_up_city', 'pick_up_street',
                   'destination_province', 'destination_district', 'destination_city', 'destination_street', 'number_of_days', 'status', 'image']
 
     def get_customer_name(self, obj):

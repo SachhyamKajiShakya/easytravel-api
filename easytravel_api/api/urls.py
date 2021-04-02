@@ -22,6 +22,10 @@ urlpatterns = [
          views.make_shortbookings, name='shortbooking'),
     path('longbooking/<int:vehicleid>/<int:driverid>/',
          views.make_longbookings, name='longbooking'),
+    path('updatelongbookings/<int:booking_id>',
+         views.update_longbookings, name='updatelongbookings'),
+    path('updateshortbookings/<int:booking_id>', views.update_shortbookings,
+         name='updateshortbookings'),
     path('fcm/<int:vehicle_id>', views.send_notification, name="fcm"),
     path('storedevicetoken/', views.store_device_token, name='storedevicetoken'),
     path('managevehicles/<int:vehicle_id>',
@@ -38,4 +42,6 @@ urlpatterns = [
     path('postedvehicles', views.getPostedvehicles, name='postedvehicles'),
     path('getuserdata', views.getUserData, name='getuserdata'),
     path('updatepassword', views.UpdatePassword.as_view(), name='updatepassword'),
+    path('cancelbooking/<int:booking_id>',
+         views.sendvendor_cancelmessage, name='cancelbooking'),
 ]

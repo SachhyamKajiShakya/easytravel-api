@@ -146,7 +146,7 @@ class Booking(models.Model):
 
 class DeviceToken(models.Model):
     device_token = models.TextField(null=False)
-    consumer_id = models.ForeignKey(
+    consumer = models.ForeignKey(
         Account, on_delete=models.SET_NULL, null=True)
 
     def __str__(self):

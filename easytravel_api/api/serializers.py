@@ -170,3 +170,9 @@ class GetBookingSerializer(serializers.ModelSerializer):
 
     def get_image(self, obj):
         return 'http://192.168.100.67:8000/media/{}'.format(obj.vehicle.vehicleImage)
+
+
+class PostedvehicleRequest(serializers.ModelSerializer):
+    class Meta:
+        model = Booking
+        fields = '__all__'

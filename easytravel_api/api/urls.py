@@ -28,6 +28,7 @@ urlpatterns = [
          name='updateshortbookings'),
     path('fcm/<int:vehicle_id>', views.send_notification, name="fcm"),
     path('storedevicetoken/', views.store_device_token, name='storedevicetoken'),
+    path('updatedevicetoken', views.updateDeviceToken, name='updatedevicetoken'),
     path('managevehicles/<int:vehicle_id>',
          views.manage_vehicles, name='managevehicles'),
     path('logout/', views.LogoutView.as_view(), name='logout'),
@@ -44,4 +45,6 @@ urlpatterns = [
     path('updatepassword', views.UpdatePassword.as_view(), name='updatepassword'),
     path('cancelbooking/<int:booking_id>',
          views.sendvendor_cancelmessage, name='cancelbooking'),
+    path('postbookingrequest', views.postedVehicleRequest,
+         name='postbookingrequest'),
 ]

@@ -258,9 +258,26 @@ def update_shortbookings(request, booking_id):
     queryset = Booking.objects.get(id=booking_id)
     serializer = serializers.UpdateShortBookingSerializer(
         queryset, data=request.data)
+    vendorid = queryset.vehicle.vendor.id
+    category = queryset.vehicle.category
+    deviceid = DeviceToken.objects.get(consumer=vendorid)
+    deviceToken = deviceid.device_token
+    print(deviceToken)
     if serializer.is_valid():
         serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        push_service = FCMNotification(
+            api_key="AAAAKKogqpw:APA91bFr5bcuuMRpGGNiti-oQi8stniJvZ4k8JDoMJUQ5I1XsjzOJq7Fesu5ZkG6PitkMTT_YUZqyq-O1DtCYHaJMNhnohtzcVcMs7LzdQ2-z8cNVPIFryUmOmVLoBXS1kRk_JteIzWE")
+        message_title = "Booking Request"
+        message_body = "A booking request had been made for your vehicle",
+        datamessage = {
+            "booking_id": booking_id,
+            "category": category,
+        }
+        click_action = "FLUTTER_NOTIFICATION_CLICK"
+        registration_id = deviceToken
+        result = push_service.notify_single_device(
+            registration_id=registration_id, click_action=click_action, message_body=message_body, message_title=message_title, data_message=datamessage)
+        return Response(result, status=status.HTTP_200_OK)
     print(serializer.errors)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -272,9 +289,26 @@ def update_longbookings(request, booking_id):
     queryset = Booking.objects.get(id=booking_id)
     serializer = serializers.UpdateLongBookingSerializer(
         queryset, data=request.data)
+    vendorid = queryset.vehicle.vendor.id
+    category = queryset.vehicle.category
+    deviceid = DeviceToken.objects.get(consumer=vendorid)
+    deviceToken = deviceid.device_token
+    print(deviceToken)
     if serializer.is_valid():
         serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        push_service = FCMNotification(
+            api_key="AAAAKKogqpw:APA91bFr5bcuuMRpGGNiti-oQi8stniJvZ4k8JDoMJUQ5I1XsjzOJq7Fesu5ZkG6PitkMTT_YUZqyq-O1DtCYHaJMNhnohtzcVcMs7LzdQ2-z8cNVPIFryUmOmVLoBXS1kRk_JteIzWE")
+        message_title = "Booking Request"
+        message_body = "A booking request had been made for your vehicle",
+        datamessage = {
+            "booking_id": booking_id,
+            "category": category,
+        }
+        click_action = "FLUTTER_NOTIFICATION_CLICK"
+        registration_id = deviceToken
+        result = push_service.notify_single_device(
+            registration_id=registration_id, click_action=click_action, message_body=message_body, message_title=message_title, data_message=datamessage)
+        return Response(result, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -356,7 +390,7 @@ def send_notification(request, vehicle_id):
     return Response(status=status.HTTP_200_OK)
 
 
-# POST method to send confirmed notificaitons to consumers
+# POST method to send confirmed notifications to consumers
 @api_view(['POST'])
 @permission_classes([])
 def send_confirmnotification(request, booking_id):
@@ -384,7 +418,7 @@ def send_confirmnotification(request, booking_id):
     return Response(status=status.HTTP_200_OK)
 
 
-# POST method to send cancelled notificaitons to consumers
+# POST method to send cancelled notifications to consumers
 @api_view(['POST'])
 @permission_classes([])
 def send_cancelnotification(request, booking_id):

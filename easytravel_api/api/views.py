@@ -245,8 +245,14 @@ def make_shortbookings(request, vehicleid, driverid):
     if request.method == 'POST':
         serializer = serializers.ShortBookingSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(vehicle=booked_vehicle, driver=assigned_driver,
-                            consumer=consumer)
+            date = serializer.validated_data.get('pick_up_date')
+            time = serializer.validated_data.get('pick_up_time')
+            if Booking.objects.filter(
+                    consumer=consumer, vehicle=vehicleid, pick_up_time=time, pick_up_date=date).exists():
+                print('exists')
+            else:
+                serializer.save(vehicle=booked_vehicle, driver=assigned_driver,
+                                consumer=consumer)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

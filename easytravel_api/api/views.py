@@ -274,7 +274,7 @@ def update_shortbookings(request, booking_id):
         push_service = FCMNotification(
             api_key="AAAAKKogqpw:APA91bFr5bcuuMRpGGNiti-oQi8stniJvZ4k8JDoMJUQ5I1XsjzOJq7Fesu5ZkG6PitkMTT_YUZqyq-O1DtCYHaJMNhnohtzcVcMs7LzdQ2-z8cNVPIFryUmOmVLoBXS1kRk_JteIzWE")
         message_title = "Booking Request"
-        message_body = "A booking request had been made for your vehicle",
+        message_body = 'A booking has been updated for your vehicle',
         datamessage = {
             "booking_id": booking_id,
             "category": category,
@@ -305,7 +305,7 @@ def update_longbookings(request, booking_id):
         push_service = FCMNotification(
             api_key="AAAAKKogqpw:APA91bFr5bcuuMRpGGNiti-oQi8stniJvZ4k8JDoMJUQ5I1XsjzOJq7Fesu5ZkG6PitkMTT_YUZqyq-O1DtCYHaJMNhnohtzcVcMs7LzdQ2-z8cNVPIFryUmOmVLoBXS1kRk_JteIzWE")
         message_title = "Booking Request"
-        message_body = "A booking request had been made for your vehicle",
+        message_body = 'A booking has been updated for your vehicle',
         datamessage = {
             "booking_id": booking_id,
             "category": category,
@@ -384,7 +384,7 @@ def send_notification(request, vehicle_id):
     push_service = FCMNotification(
         api_key="AAAAKKogqpw:APA91bFr5bcuuMRpGGNiti-oQi8stniJvZ4k8JDoMJUQ5I1XsjzOJq7Fesu5ZkG6PitkMTT_YUZqyq-O1DtCYHaJMNhnohtzcVcMs7LzdQ2-z8cNVPIFryUmOmVLoBXS1kRk_JteIzWE")
     message_title = "Booking Request"
-    message_body = "A booking request had been made for your vehicle",
+    message_body = 'A booking request had been made for your vehicle',
     datamessage = {
         "booking_id": bookingid,
         "category": category,
@@ -411,7 +411,7 @@ def send_confirmnotification(request, booking_id):
     push_service = FCMNotification(
         api_key="AAAAKKogqpw:APA91bFr5bcuuMRpGGNiti-oQi8stniJvZ4k8JDoMJUQ5I1XsjzOJq7Fesu5ZkG6PitkMTT_YUZqyq-O1DtCYHaJMNhnohtzcVcMs7LzdQ2-z8cNVPIFryUmOmVLoBXS1kRk_JteIzWE")
     message_title = "Booking Confirmed"
-    message_body = "Your booking has been confirmed for {} {}".format(
+    message_body = 'Your booking has been confirmed for {} {}'.format(
         date, time)
     datamessage = {
         "screen": "payment",
@@ -438,10 +438,9 @@ def send_cancelnotification(request, booking_id):
     registrationid = deviceToken.device_token
     push_service = FCMNotification(
         api_key="AAAAKKogqpw:APA91bFr5bcuuMRpGGNiti-oQi8stniJvZ4k8JDoMJUQ5I1XsjzOJq7Fesu5ZkG6PitkMTT_YUZqyq-O1DtCYHaJMNhnohtzcVcMs7LzdQ2-z8cNVPIFryUmOmVLoBXS1kRk_JteIzWE")
-    message_title = "Booking Cancelled"
-    message_body = "Your booking has been cancelled for {} {}".format(
-        date, time)
-    registration_id = registration_id
+    message_title = 'Booking Cancelled'
+    message_body = 'Your booking has been denied for {} {}'.format(date, time),
+    registration_id = registrationid
     result = push_service.notify_single_device(
         registration_id=registration_id, message_body=message_body, message_title=message_title)
     return Response({"success": result}, status=status.HTTP_200_OK)
@@ -463,7 +462,7 @@ def sendvendor_cancelmessage(request, booking_id):
     push_service = FCMNotification(
         api_key="AAAAKKogqpw:APA91bFr5bcuuMRpGGNiti-oQi8stniJvZ4k8JDoMJUQ5I1XsjzOJq7Fesu5ZkG6PitkMTT_YUZqyq-O1DtCYHaJMNhnohtzcVcMs7LzdQ2-z8cNVPIFryUmOmVLoBXS1kRk_JteIzWE")
     message_title = "Booking Cancelled"
-    message_body = "Your booking for {} {} made on {} {} has been cancelled.".format(
+    message_body = 'Your booking for {} {} made on {} {} has been cancelled.'.format(
         vehiclename, vehiclemodel, date, time)
     registration_id = registrationid
     push_service.notify_single_device(

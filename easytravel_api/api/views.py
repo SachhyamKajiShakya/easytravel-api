@@ -314,7 +314,7 @@ def update_longbookings(request, booking_id):
         registration_id = deviceToken
         result = push_service.notify_single_device(
             registration_id=registration_id, click_action=click_action, message_body=message_body, message_title=message_title, data_message=datamessage)
-        return Response(result, status=status.HTTP_200_OK)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -405,6 +405,7 @@ def send_confirmnotification(request, booking_id):
     queryset = Booking.objects.get(id=booking_id)
     date = queryset.pick_up_date
     time = queryset.pick_up_time
+    amount = queryset.total_amount
     consumer = queryset.consumer.id
     deviceToken = DeviceToken.objects.get(consumer=consumer)
     registrationid = deviceToken.device_token
@@ -416,6 +417,7 @@ def send_confirmnotification(request, booking_id):
     datamessage = {
         "screen": "payment",
         "bookingid": booking_id,
+        "amount": amount,
     }
     click_action = "FLUTTER_NOTIFICATION_CLICK"
     registration_id = registrationid

@@ -134,6 +134,7 @@ class Booking(models.Model):
     destination_street = models.CharField(
         max_length=50, null=False, default='')
     number_of_days = models.IntegerField(null=True)
+    total_amount = models.IntegerField(null=False, default=0)
     status = models.CharField(default='pending', null=False, max_length=50)
     driver = models.ForeignKey(AssignDriver, on_delete=models.CASCADE)
     vehicle = models.ForeignKey(

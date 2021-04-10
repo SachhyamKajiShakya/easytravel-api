@@ -4,6 +4,7 @@ from django.contrib.auth.hashers import make_password
 from django.conf import settings
 from django.db.models import Q
 import datetime
+from django.contrib.auth.hashers import make_password
 # imports to be made from rest framework
 from rest_framework import status, generics
 from rest_framework.response import Response
@@ -26,13 +27,14 @@ from pyfcm import FCMNotification
 # @permission_classes([])
 # def phone_verification(request):
 #     if request.method == 'POST':
-#         serializer = PhoneSerializer(data=request.data)
+#         serializer = serializers.PhoneSerializer(data=request.data)
 #         if serializer.is_valid():
+#             print(serializer.data['phone'])
 #             request.session['phone'] = serializer.data['phone']
 #             verification = verifications(
 #                 request.session['phone'], 'sms')
 #             print(request.session['phone'])
-#         return Response({'phoneNumber': request.session['phone']})
+#         return Response({'phoneNumber'})
 
 
 # # post method to check the entered otp code
@@ -40,7 +42,7 @@ from pyfcm import FCMNotification
 # @permission_classes([])
 # def otp_verification(request):
 #     if request.method == 'POST':
-#         serializer = OtpSerializer(data=request.data)
+#         serializer = serializers.OtpSerializer(data=request.data)
 #         if serializer.is_valid():
 #             print(serializer.data['otp'])
 #             print(serializer.data['phoneNumber'])
@@ -49,6 +51,7 @@ from pyfcm import FCMNotification
 #             if verification.status == 'approved':
 #                 print(request.session['phoneNumber'])
 #                 return Response({'status': verification.status})
+#                 print(verification.status)
 #         return Response(serializer.data)
 
 
@@ -60,12 +63,14 @@ def user_registration(request):
         serializer = serializers.UserRegistrationSerializer(data=request.data)
         data = {}
         if serializer.is_valid():
-            account = serializer.save()
+            password = make_password(serializer.validated_data['password'])
+            account = serializer.save(password=password)
             token = Token.objects.get(user=account).key
             data['token'] = token
+            return Response(data, status=status.HTTP_200_OK)
         else:
             data = serializer.errors
-        return Response(data)
+            return Response(data, status=status.HTTP_403_FORBIDDEN)
 
 
 # api put method to edit user data
@@ -513,3 +518,18 @@ def postedVehicleRequest(request):
         vehicle__in=RegisterVehicle.objects.filter(vendor=request.user))
     serializer = serializers.GetBookingSerializer(queryset, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+# reset password
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def resetPassword(request):
+    print(request.user.id)
+    queryset = Account.objects.get(id=request.user.id)
+    print(queryset.id)
+    serializer = serializers.ResetPasswordSerializer(
+        queryset, data=request.data)
+    if serializer.is_valid():
+        updatedpassword = make_password(serializer.validated_data['password'])
+        serializer.save(password=updatedpassword)
+        return Response(serializer.data, status=status.HTTP_200_OK)

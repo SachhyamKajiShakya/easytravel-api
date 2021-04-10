@@ -4,38 +4,40 @@ from .models import Account, RegisterVehicle, AssignDriver, Booking, DeviceToken
 
 # creating serializer class for user registration
 class UserRegistrationSerializer(serializers.ModelSerializer):
-    password2 = serializers.CharField(
-        style={'input_type': 'password'}, write_only=True)
+    # password2 = serializers.CharField(
+    #     style={'input_type': 'password'}, write_only=True)
 
     class Meta:
         model = Account
         fields = ['email', 'username', 'name', 'phone',
-                  'password', 'password2']
-        extra_kwargs = {
-            'password': {'write_only': True}
-        }
+                  'password']
 
-    # overwriting save function to create user
-    def save(self, *args, **kwargs):
-        account = Account(
-            email=self.validated_data['email'],
-            username=self.validated_data['username'],
-            name=self.validated_data['name'],
-            phone=self.validated_data['phone']
-        )
-        password = self.validated_data['password']
-        password2 = self.validated_data['password2']
+        # extra_kwargs = {
+        #     'password': {'write_only': True}
+        # }
 
-    # show error if passwords do not match
-        if password != password2:
-            raise serializers.ValidationError(
-                {'password': 'passwords msut match'})
-        account.set_password(password)
-        account.save()
-        return account
+        # # overwriting save function to create user
+
+        # def save(self, *args, **kwargs):
+        #     password = self.validated_data['password']
+        #     password2 = self.validated_data['password2']
+        #     if password != password2:
+        #         raise serializers.ValidationError(
+        #             {'password': 'passwords must match'})
+        #     account = Account(
+        #         email=self.validated_data['email'],
+        #         username=self.validated_data['username'],
+        #         name=self.validated_data['name'],
+        #         phone=self.validated_data['phone']
+        #     )
+        # # show error if passwords do not match
+        #     account.set_password(password)
+        #     account.save()
+        #     return account
+
+        # creating model serializer to update user data
 
 
-# creating model serializer to update user data
 class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
@@ -165,14 +167,23 @@ class GetBookingSerializer(serializers.ModelSerializer):
 
     def get_vehicle_price(self, obj):
         f_vehicle_price = obj.vehicle.price
-        print(obj.vehicle.vehicleImage)
+        print(f_vehicle_price)
         return f_vehicle_price
 
     def get_image(self, obj):
         return 'http://192.168.100.67:8000/media/{}'.format(obj.vehicle.vehicleImage)
 
 
+# model serializer for posted vehicle
 class PostedvehicleRequest(serializers.ModelSerializer):
     class Meta:
         model = Booking
         fields = '__all__'
+
+# model serialzier for reset password
+
+
+class ResetPasswordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Account
+        fields = ['password']

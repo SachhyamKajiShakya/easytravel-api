@@ -47,4 +47,5 @@ urlpatterns = [
          views.sendvendor_cancelmessage, name='cancelbooking'),
     path('postbookingrequest', views.postedVehicleRequest,
          name='postbookingrequest'),
+    path('resetpassword', views.resetPassword, name='resetpassword'),
 ]

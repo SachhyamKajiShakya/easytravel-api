@@ -4,38 +4,12 @@ from .models import Account, RegisterVehicle, AssignDriver, Booking, DeviceToken
 
 # creating serializer class for user registration
 class UserRegistrationSerializer(serializers.ModelSerializer):
-    # password2 = serializers.CharField(
-    #     style={'input_type': 'password'}, write_only=True)
-
     class Meta:
         model = Account
         fields = ['email', 'username', 'name', 'phone',
                   'password']
 
-        # extra_kwargs = {
-        #     'password': {'write_only': True}
-        # }
-
-        # # overwriting save function to create user
-
-        # def save(self, *args, **kwargs):
-        #     password = self.validated_data['password']
-        #     password2 = self.validated_data['password2']
-        #     if password != password2:
-        #         raise serializers.ValidationError(
-        #             {'password': 'passwords must match'})
-        #     account = Account(
-        #         email=self.validated_data['email'],
-        #         username=self.validated_data['username'],
-        #         name=self.validated_data['name'],
-        #         phone=self.validated_data['phone']
-        #     )
-        # # show error if passwords do not match
-        #     account.set_password(password)
-        #     account.save()
-        #     return account
-
-        # creating model serializer to update user data
+ # creating model serializer to update user data
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):
@@ -93,14 +67,6 @@ class ShortBookingSerializer(serializers.ModelSerializer):
                   'pick_up_street', 'destination_district', 'destination_city', 'destination_street', 'total_amount']
 
 
-# model serialzier for posting short booking vehicles
-class UpdateShortBookingSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Booking
-        fields = ['pick_up_date', 'pick_up_time', 'pick_up_district', 'pick_up_city',
-                  'pick_up_street', 'destination_district', 'destination_city', 'destination_street']
-
-
 # model serializer for posting long booking vehicles
 class LongBookingSerializer(serializers.ModelSerializer):
     class Meta:
@@ -109,7 +75,16 @@ class LongBookingSerializer(serializers.ModelSerializer):
                   'destination_district', 'destination_city', 'destination_street', 'total_amount']
 
 
+# model serialzier for posting short booking vehicles
+class UpdateShortBookingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Booking
+        fields = ['pick_up_date', 'pick_up_time', 'pick_up_district', 'pick_up_city',
+                  'pick_up_street', 'destination_district', 'destination_city', 'destination_street']
+
 # model serializer for posting long booking vehicles
+
+
 class UpdateLongBookingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Booking
